@@ -111,6 +111,53 @@ Access the dashboard at: **http://localhost:3000**
 
 ---
 
+## Deployment
+
+### Railway Deployment (Recommended for Production)
+
+Deploy the complete platform to Railway with managed PostgreSQL and Redis:
+
+```bash
+# 1. Push your code to GitHub
+git push origin main
+
+# 2. Follow the Railway deployment guide
+# See: docs/RAILWAY_DEPLOYMENT_GUIDE.md
+```
+
+**What gets deployed:**
+- ✅ **API Service** - FastAPI backend with automatic migrations
+- ✅ **Worker Service** - Background job processor for anchoring
+- ✅ **Frontend** - Next.js dashboard with real-time updates
+- ✅ **Agent Service** - XMTP autonomous agent (optional)
+- ✅ **PostgreSQL** - Managed database with automatic backups
+- ✅ **Redis** - Managed queue and caching layer
+
+**Quick Links:**
+- 📖 [Complete Railway Deployment Guide](docs/RAILWAY_DEPLOYMENT_GUIDE.md)
+- 🔧 [Environment Variables Reference](docs/ENVIRONMENT_VARIABLES.md)
+- 🚀 [Railway Platform](https://railway.app)
+
+**Deployment time:** ~15 minutes for complete stack
+
+### Other Deployment Options
+
+**Docker Compose (Local/Self-Hosted):**
+```bash
+# All services with PostgreSQL and Redis
+docker-compose up -d
+
+# Access API at http://localhost:8000
+# Access UI at http://localhost:3000
+```
+
+**Kubernetes:**
+```bash
+# Coming soon - Helm charts for Kubernetes deployment
+```
+
+---
+
 ## Core Features
 
 ### 1. Project Management
