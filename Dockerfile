@@ -1,33 +1,26 @@
-# Base image
-FROM python:3.11-slim
-
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-
+# Web ALT (Next.js) - Production Dockerfile
+# Build stage
+FROM node:20-alpine AS builder
 WORKDIR /app
-
-# System deps for building wheels (lxml) and runtime
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    libxml2-dev \
-    libxslt1-dev \
-    zlib1g-dev \
-    curl \
- && rm -rf /var/lib/apt/lists/*
-
-# Python deps
-COPY requirements.txt ./
-RUN pip install --upgrade pip && pip install -r requirements.txt
-
-# App source
+ENV NODE_ENV=production
+# Install deps
+COPY package.json package-lock.json* ./
+RUN npm ci --include=dev
+# Copy source and build
 COPY . .
+# NEXT_PUBLIC_API_BASE must be provided at runtime (Railway env). No build-time default.
+RUN npm run build
 
-# Entrypoint for running migrations + starting services
-RUN chmod +x /app/scripts/docker_entrypoint.sh
-
-EXPOSE 8000 8501
-
-ENTRYPOINT ["/app/scripts/docker_entrypoint.sh"]
-
-# Default command (docker-compose overrides for api/worker)
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Runtime stage
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+# Copy only what we need to run
+COPY --from=builder /app/package.json /app/package-lock.json ./
+COPY --from=builder /app/.next ./.next
+# Install only production deps
+RUN npm ci --omit=dev
+# Expose web port
+EXPOSE 3000
+# Start Next.js (bind to Railway's PORT and 0.0.0.0)
+CMD ["sh", "-c", "npx next start -H 0.0.0.0 -p ${PORT:-3000}"]
